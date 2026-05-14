@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, Tavily AI. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nat"]
+
+[project]
+name = "nemo-agent-toolkit-tavily"
+version = "0.1.0"
+requires-python = ">=3.11,<3.14"
+description = "Tavily integration for NVIDIA NeMo Agent Toolkit"
+readme = "README.md"
+keywords = ["ai", "agents", "web search", "tavily", "nemo-agent-toolkit", "nvidia-nat"]
+license = { text = "Apache-2.0" }
+authors = [{ name = "Tavily", email = "support@tavily.com" }]
+maintainers = [{ name = "Tavily" }]
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+  # Compat-release range per the 3P plugin spec: tracks NAT minors, breaks on major.
+  "nvidia-nat-core >= 1.7, < 2.0",
+  "tavily-python >= 0.7.0, < 1.0.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest >= 8.0",
+  "pytest-asyncio >= 0.24",
+  "nvidia-nat-test >= 1.7, < 2.0",
+]
+
+[project.urls]
+documentation = "https://docs.nvidia.com/nemo/agent-toolkit/latest/"
+source = "https://github.com/tavily-ai/NeMo-Agent-Toolkit-tavily"
+
+[project.entry-points.'nat.components']
+nat_tavily = "nat.plugins.tavily.register"
