@@ -27,7 +27,7 @@ classifiers = [
 
 dependencies = [
   # Compat-release range per the 3P plugin spec: tracks NAT minors, breaks on major.
-  "nvidia-nat-core >= 1.7, < 2.0",
+  "nvidia-nat-core >= 1.6, < 2.0",
   "tavily-python >= 0.7.0, < 1.0.0",
 ]
 
@@ -35,7 +35,7 @@ dependencies = [
 test = [
   "pytest >= 8.0",
   "pytest-asyncio >= 0.24",
-  "nvidia-nat-test >= 1.7, < 2.0",
+  "nvidia-nat-test >= 1.6, < 2.0",
 ]
 
 [project.urls]
@@ -44,3 +44,6 @@ source = "https://github.com/tavily-ai/NeMo-Agent-Toolkit-tavily"
 
 [project.entry-points.'nat.components']
 nat_tavily = "nat.plugins.tavily.register"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
