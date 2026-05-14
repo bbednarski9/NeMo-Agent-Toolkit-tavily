@@ -120,8 +120,7 @@ def _build_input_schema(method: Callable, name: str) -> type[BaseModel]:
     )
 
 
-# Schemas are a static reflection of the SDK signature; build once at module import so
-# test-time monkeypatches of the bound methods don't poison the introspection.
+# Schemas are a static reflection of the SDK signature
 TavilySearchInput: type[BaseModel] = _build_input_schema(AsyncTavilyClient.search, "TavilySearchInput")
 TavilyExtractInput: type[BaseModel] = _build_input_schema(AsyncTavilyClient.extract, "TavilyExtractInput")
 TavilyCrawlInput: type[BaseModel] = _build_input_schema(AsyncTavilyClient.crawl, "TavilyCrawlInput")

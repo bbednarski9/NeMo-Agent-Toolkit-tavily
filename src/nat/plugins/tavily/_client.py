@@ -41,4 +41,4 @@ def build_async_client(api_key: SerializableSecretStr | None) -> AsyncTavilyClie
     if not resolved:
         raise ValueError(
             "Tavily API key not provided. Set the `api_key` config field or the TAVILY_API_KEY env var.")
-    return AsyncTavilyClient(api_key=resolved, client_name="nvidia-nat-tavily")
+    return AsyncTavilyClient(api_key=resolved, client_name="nemo-agent-toolkit-tavily")
