@@ -5,22 +5,37 @@ on:
     tags:
       - "v*"
 
+permissions: {}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write  # Trusted Publishing
+      contents: read   # checkout
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Verify tag matches pyproject version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "tag $TAG does not match pyproject version $PKG"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: uv sync --extra test
+
+      - name: Test
+        run: uv run pytest tests/ -v
 
       - name: Build
         run: uv build
