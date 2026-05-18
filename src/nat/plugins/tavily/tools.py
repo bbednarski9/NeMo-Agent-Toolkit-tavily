@@ -32,11 +32,11 @@ from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import create_model
 
-from nat.builder.builder import Builder
-from nat.builder.function import FunctionGroup
-from nat.cli.register_workflow import register_function_group
-from nat.data_models.common import SerializableSecretStr
-from nat.data_models.function import FunctionGroupBaseConfig
+from nat.plugin_api import Builder
+from nat.plugin_api import FunctionGroup
+from nat.plugin_api import FunctionGroupBaseConfig
+from nat.plugin_api import SerializableSecretStr
+from nat.plugin_api import register_function_group
 from tavily import AsyncTavilyClient
 
 from ._client import build_async_client

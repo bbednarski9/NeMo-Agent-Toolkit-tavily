@@ -16,8 +16,8 @@
 
 import os
 
-from nat.data_models.common import SerializableSecretStr
-from nat.data_models.common import get_secret_value
+from nat.plugin_api import SerializableSecretStr
+from nat.plugin_api import get_secret_value
 from tavily import AsyncTavilyClient
 
 

@@ -21,8 +21,8 @@ from typing import AsyncIterator
 import pytest
 from tavily import AsyncTavilyClient
 
-from nat.builder.workflow_builder import WorkflowBuilder
-from nat.data_models.common import SerializableSecretStr
+from nat.plugin_api import SerializableSecretStr
+from nat.test import ToolTestRunner
 from nat.plugins.tavily._client import build_async_client
 from nat.plugins.tavily.tools import _HIDDEN_PARAMS
 from nat.plugins.tavily.tools import TavilyCrawlInput
@@ -118,12 +118,10 @@ async def test_each_tool_routes_to_correct_sdk_method(monkeypatch, tool, method_
 
     monkeypatch.setattr(AsyncTavilyClient, method_name, fake)
 
-    async with WorkflowBuilder() as builder:
-        await builder.add_function_group(name="tavily", config=TavilyToolsGroupConfig())
-        group = await builder.get_function_group("tavily")
-        fns = await group.get_all_functions()
-        fn = fns[f"tavily__{tool}"]
-        result = await fn.acall_invoke(**payload)
+    runner = ToolTestRunner()
+    result = await runner.test_function_group_tool(config_type=TavilyToolsGroupConfig,
+                                                   function_name=tool,
+                                                   input_kwargs=payload)
 
     assert captured["called"] == method_name
     for k, v in required_kwargs.items():
@@ -134,9 +132,9 @@ async def test_each_tool_routes_to_correct_sdk_method(monkeypatch, tool, method_
 async def test_group_raises_without_api_key(monkeypatch):
     monkeypatch.delenv("TAVILY_API_KEY", raising=False)
 
-    async with WorkflowBuilder() as builder:
-        with pytest.raises(ValueError, match="Tavily API key"):
-            await builder.add_function_group(name="tavily", config=TavilyToolsGroupConfig())
+    runner = ToolTestRunner()
+    with pytest.raises(ValueError, match="Tavily API key"):
+        await runner.test_function_group(config_type=TavilyToolsGroupConfig)
 
 
 def test_build_async_client_rejects_whitespace_config_api_key(monkeypatch):
@@ -156,11 +154,8 @@ def test_build_async_client_rejects_whitespace_env_api_key(monkeypatch):
 async def test_group_exposes_all_five_tools(monkeypatch):
     monkeypatch.setenv("TAVILY_API_KEY", "test-key")
 
-    async with WorkflowBuilder() as builder:
-        await builder.add_function_group(name="tavily", config=TavilyToolsGroupConfig())
-        group = await builder.get_function_group("tavily")
-        functions = await group.get_all_functions()
-        names = set(functions.keys())
+    runner = ToolTestRunner()
+    names = await runner.test_function_group(config_type=TavilyToolsGroupConfig)
 
     assert names == {
         "tavily__search",
