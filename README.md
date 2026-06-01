@@ -14,8 +14,7 @@ NAT auto-discovers the plugin via `importlib.metadata.entry_points()`. No additi
 
 ## Compatibility
 
-This package currently targets NVIDIA NeMo Agent Toolkit `>=1.8.0.dev33,<1.8.0a0` while testing against the 1.8
-development branch. After stable 1.8 validation, the supported range should be `>=1.8,<2.0`.
+This package supports NVIDIA NeMo Agent Toolkit `>=1.8,<2.0`.
 
 ## Configuration
 
