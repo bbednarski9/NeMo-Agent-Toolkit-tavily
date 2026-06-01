@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import inspect
+import importlib.metadata
 import json
 from typing import AsyncIterator
 
@@ -47,6 +48,22 @@ def _expected_fields(method) -> set[str]:
         if name not in _HIDDEN_PARAMS
         and p.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
     }
+
+
+def test_package_entry_point_loads_tavily_plugin():
+    dist = importlib.metadata.distribution("nemo-agent-toolkit-tavily")
+    plugin_entry_points = {ep.name: ep for ep in dist.entry_points if ep.group == "nat.plugins"}
+
+    assert plugin_entry_points["nat_tavily"].value == "nat.plugins.tavily.register"
+    assert not [ep for ep in dist.entry_points if ep.group == "nat.components"]
+
+    module = plugin_entry_points["nat_tavily"].load()
+    assert module.__name__ == "nat.plugins.tavily.register"
+
+    from nat.cli.type_registry import GlobalTypeRegistry
+
+    registered = GlobalTypeRegistry.get().get_function_group(TavilyToolsGroupConfig)
+    assert registered.config_type is TavilyToolsGroupConfig
 
 
 @pytest.mark.parametrize("schema, method, required_field", [
