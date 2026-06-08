@@ -134,7 +134,11 @@ async def test_each_tool_routes_to_correct_sdk_method(monkeypatch, tool, method_
         captured["kwargs"] = kwargs
         return {"ok": True, "tool": method_name}
 
+    async def fake_close(self):
+        captured["closed"] = captured.get("closed", 0) + 1
+
     monkeypatch.setattr(AsyncTavilyClient, method_name, fake)
+    monkeypatch.setattr(AsyncTavilyClient, "close", fake_close)
 
     runner = ToolTestRunner()
     result = await runner.test_function_group_tool(config_type=TavilyToolsGroupConfig,
@@ -144,6 +148,7 @@ async def test_each_tool_routes_to_correct_sdk_method(monkeypatch, tool, method_
     assert captured["called"] == method_name
     for k, v in required_kwargs.items():
         assert captured["kwargs"][k] == v
+    assert captured["closed"] == 1
     assert result == {"ok": True, "tool": method_name}
 
 
