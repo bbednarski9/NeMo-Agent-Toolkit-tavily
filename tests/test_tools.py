@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import builtins
 import inspect
 import importlib.metadata
 import json
@@ -22,6 +23,7 @@ from typing import AsyncIterator
 import pytest
 from tavily import AsyncTavilyClient
 
+from nat.builder.workflow_builder import WorkflowBuilder
 from nat.plugin_api import SerializableSecretStr
 from nat.test import ToolTestRunner
 from nat.plugins.tavily._client import build_async_client
@@ -180,6 +182,39 @@ async def test_group_exposes_all_five_tools(monkeypatch):
         "tavily__map",
         "tavily__research",
     }
+
+
+async def test_core_workflow_builder_invokes_search_without_langchain(monkeypatch):
+    """Smoke-test the NAT core path without relying on a framework-specific agent wrapper."""
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+
+    captured: dict = {}
+
+    async def fake_search(self, **kwargs):
+        captured["kwargs"] = kwargs
+        return {"answer": "sunny", "results": []}
+
+    monkeypatch.setattr(AsyncTavilyClient, "search", fake_search)
+
+    original_import = builtins.__import__
+
+    def reject_langchain_imports(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "langchain" or name.startswith(("langchain.", "langchain_")):
+            raise AssertionError(f"Core Tavily smoke path unexpectedly imported {name}")
+        return original_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", reject_langchain_imports)
+
+    async with WorkflowBuilder() as builder:
+        group = await builder.add_function_group("tavily", TavilyToolsGroupConfig(include=["search"]))
+        accessible = await group.get_accessible_functions()
+        assert set(accessible) == {"tavily__search"}
+
+        search = await builder.get_function("tavily__search")
+        result = await search.ainvoke({"query": "weather sf"})
+
+    assert captured["kwargs"] == {"query": "weather sf"}
+    assert result == {"answer": "sunny", "results": []}
 
 
 async def test_research_stream_consumes_final_sse_block_without_trailing_separator():
